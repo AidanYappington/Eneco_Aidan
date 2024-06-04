@@ -195,9 +195,9 @@ Console.WriteLine("Image clicked!");
 <div class="image-container">
     <img src="MockupFloorplan.png" class="interactable-image" usemap="#image-map" />
     <map name="image-map">
-        <area shape="rect" coords="130,350,250,420" href="http://localhost:5257/reservation/?roomId=1c958aa3-fb21-42e1-af18-5e3759d49d0b" @onclick="OnArea1Click" />
+        <area shape="rect" coords="130,350,250,420" href="javascript:void(0);" @onclick="() => HandleReservation()" />
         <area shape="rect" coords="550,350,700,420" href="javascript:void(0);" @onclick="OnArea2Click" />
-        <area shape="rect" coords="330,680,410,740" href="javascript:void(0);" @onclick="OnArea3Click" />
+        <area shape="rect" coords="330,680,410,740" href="javascript:void(0);" @onclick="() => HandleReservation()" />
     </map>
 </div>
 
