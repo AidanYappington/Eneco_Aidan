@@ -1,4 +1,5 @@
 ﻿@page "/reservation"
+
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Identity
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -7,11 +8,9 @@
 @inject RoomService RoomService
 @inject UserManager<User> UserManager
 
-<PageTitle>Reservation</PageTitle>
-
 @if (!string.IsNullOrEmpty(ErrorMessage))
 {
-    <div class="alert alert-danger">@ErrorMessage</div>
+<div class="alert alert-danger">@ErrorMessage</div>
 }
 
 <EditForm Model="Reservation" OnValidSubmit="HandleSubmit">
@@ -20,8 +19,8 @@
         <select @onchange="UpdateDate">
             @for (var i = 0; i < 14; i++)
             {
-                var currentDay = DateTime.Today.AddDays(i);
-                <option value="@(currentDay.ToString("yyyy-MM-dd"))" selected="@(currentDay == SelectedDate)">@(currentDay.ToString("dd/MM/yyyy"))</option>
+            var currentDay = DateTime.Today.AddDays(i);
+            <option value="@(currentDay.ToString("yyyy-MM-dd"))" selected="@(currentDay == SelectedDate)">@(currentDay.ToString("dd/MM/yyyy"))</option>
             }
         </select>
     </div>
@@ -31,14 +30,14 @@
         <select @onchange="UpdateStartHour">
             @foreach (var hour in StartHours)
             {
-                <option value="@hour" selected="@(hour == StartHour)">@hour</option>
+            <option value="@hour" selected="@(hour == StartHour)">@hour</option>
             }
         </select>
         Min
         <select @onchange="UpdateStartMinute">
             @foreach (var minute in StartMinutes)
             {
-                <option value="@minute" selected="@(minute == StartMinute)">@minute</option>
+            <option value="@minute" selected="@(minute == StartMinute)">@minute</option>
             }
         </select>
     </div>
@@ -48,154 +47,155 @@
         <select @onchange="UpdateEndHour">
             @foreach (var hour in EndHours)
             {
-                <option value="@hour" selected="@(hour == EndHour)">@hour</option>
+            <option value="@hour" selected="@(hour == EndHour)">@hour</option>
             }
         </select>
         Min
         <select @onchange="UpdateEndMinute">
             @foreach (var minute in EndMinutes)
             {
-                <option value="@minute" selected="@(minute == EndMinute)">@minute</option>
+            <option value="@minute" selected="@(minute == EndMinute)">@minute</option>
             }
         </select>
     </div>
     <div>
         <button type="submit">Save</button>
-        <button type="button" @onclick="() => HandleCancel()">Cancel</button>
     </div>
 </EditForm>
 
 @code {
-    [SupplyParameterFromForm] public Reservation? Reservation { get; set; }
-    private DateTime SelectedDate = DateTime.Today;
-    private int StartHour;
-    private int StartMinute;
-    private int EndHour;
-    private int EndMinute;
-    private string ErrorMessage = string.Empty;
+[Parameter] public EventCallback OnClose { get; set; }
+[SupplyParameterFromForm] public Reservation? Reservation { get; set; }
+private DateTime SelectedDate = DateTime.Today;
+private int StartHour;
+private int StartMinute;
+private int EndHour;
+private int EndMinute;
+private string ErrorMessage = string.Empty;
 
-    private List<int> StartHours = new();
-    private List<int> StartMinutes = new() { 0, 30 };
-    private List<int> EndHours = new();
-    private List<int> EndMinutes = new() { 0, 30 };
+private List<int> StartHours = new();
+private List<int> StartMinutes = new() { 0, 30 };
+private List<int> EndHours = new();
+private List<int> EndMinutes = new() { 0, 30 };
 
-    protected override async Task OnInitializedAsync()
-    {
-        Reservation = new Reservation();
-        StartHour = DateTime.Now.Hour;
-        StartMinute = DateTime.Now.Minute >= 30 ? 30 : 0;
-        UpdateTimeOptions();
-        UpdateEndTimeOptions();
-    }
+protected override async Task OnInitializedAsync()
+{
+Reservation = new Reservation();
+StartHour = DateTime.Now.Hour;
+StartMinute = DateTime.Now.Minute >= 30 ? 30 : 0;
+UpdateTimeOptions();
+UpdateEndTimeOptions();
+}
 
-    private void UpdateDate(ChangeEventArgs e)
-    {
-        SelectedDate = DateTime.Parse(e.Value.ToString());
-        UpdateTimeOptions();
-    }
+private void UpdateDate(ChangeEventArgs e)
+{
+SelectedDate = DateTime.Parse(e.Value.ToString());
+UpdateTimeOptions();
+}
 
-    private void UpdateStartHour(ChangeEventArgs e)
-    {
-        StartHour = int.Parse(e.Value.ToString());
-        UpdateEndTimeOptions();
-    }
+private void UpdateStartHour(ChangeEventArgs e)
+{
+StartHour = int.Parse(e.Value.ToString());
+UpdateEndTimeOptions();
+}
 
-    private void UpdateStartMinute(ChangeEventArgs e)
-    {
-        StartMinute = int.Parse(e.Value.ToString());
-        UpdateEndTimeOptions();
-    }
+private void UpdateStartMinute(ChangeEventArgs e)
+{
+StartMinute = int.Parse(e.Value.ToString());
+UpdateEndTimeOptions();
+}
 
-    private void UpdateEndHour(ChangeEventArgs e)
-    {
-        EndHour = int.Parse(e.Value.ToString());
-        UpdateEndTimeOptions();
-    }
+private void UpdateEndHour(ChangeEventArgs e)
+{
+EndHour = int.Parse(e.Value.ToString());
+UpdateEndTimeOptions();
+}
 
-    private void UpdateEndMinute(ChangeEventArgs e)
-    {
-        EndMinute = int.Parse(e.Value.ToString());
-    }
+private void UpdateEndMinute(ChangeEventArgs e)
+{
+EndMinute = int.Parse(e.Value.ToString());
+}
 
-    private void UpdateTimeOptions()
-    {
-        StartHours.Clear();
-        EndHours.Clear();
-        var now = DateTime.Now;
+private void UpdateTimeOptions()
+{
+StartHours.Clear();
+EndHours.Clear();
+var now = DateTime.Now;
 
-        if (SelectedDate == DateTime.Today)
-        {
-            for (int hour = now.Hour; hour < 24; hour++)
-            {
-                StartHours.Add(hour);
-            }
+if (SelectedDate == DateTime.Today)
+{
+for (int hour = now.Hour; hour < 24; hour++)
+{
+StartHours.Add(hour);
+}
 
-            StartMinutes = new List<int> { 0, 30 };
-        }
-        else
-        {
-            StartHours.AddRange(Enumerable.Range(0, 24));
-            StartMinutes = new List<int> { 0, 30 };
-        }
+StartMinutes = new List<int> { 0, 30 };
+}
+else
+{
+StartHours.AddRange(Enumerable.Range(0, 24));
+StartMinutes = new List<int> { 0, 30 };
+}
 
-        UpdateEndTimeOptions();
-    }
+UpdateEndTimeOptions();
+}
 
-    private void UpdateEndTimeOptions()
-    {
-        EndHours.Clear();
-        for (int hour = StartHour; hour < 24; hour++)
-        {
-            EndHours.Add(hour);
-        }
+private void UpdateEndTimeOptions()
+{
+EndHours.Clear();
+for (int hour = StartHour; hour < 24; hour++)
+{
+EndHours.Add(hour);
+}
 
-        if (StartHour == EndHour)
-        {
-            if (StartMinute == 0)
-            {
-                EndMinutes = new List<int> { 30 };
-            }
-            else
-            {
-                EndMinutes = new List<int> { 0, 30 };
-            }
-        }
-        else
-        {
-            EndMinutes = new List<int> { 0, 30 };
-        }
+if (StartHour == EndHour)
+{
+if (StartMinute == 0)
+{
+EndMinutes = new List<int> { 30 };
+}
+else
+{
+EndMinutes = new List<int> { 0, 30 };
+}
+}
+else
+{
+EndMinutes = new List<int> { 0, 30 };
+}
 
-        if (StartMinute == 30 && EndHours.Count > 1)
-        {
-            EndHours.RemoveAt(0);
-        }
-    }
+if (StartMinute == 30 && EndHours.Count > 1)
+{
+EndHours.RemoveAt(0);
+}
+}
 
-    private void HandleCancel()
-    {
-        NavigationManager.NavigateTo("");
-    }
-    private async Task HandleSubmit()
-    {
-        if (Reservation == null) return;
+private async Task HandleSubmit()
+{
+if (Reservation == null) return;
 
-        var localStartDateTime = new DateTime(SelectedDate.Year, SelectedDate.Month, SelectedDate.Day, StartHour, StartMinute, 0);
-        var localEndDateTime = new DateTime(SelectedDate.Year, SelectedDate.Month, SelectedDate.Day, EndHour, EndMinute, 0);
+var localStartDateTime = new DateTime(SelectedDate.Year, SelectedDate.Month, SelectedDate.Day, StartHour, StartMinute, 0);
+var localEndDateTime = new DateTime(SelectedDate.Year, SelectedDate.Month, SelectedDate.Day, EndHour, EndMinute, 0);
 
-        // Check if the start time is in the future
-        if (localStartDateTime <= DateTime.Now)
-        {
-            ErrorMessage = "The start time must be in the future.";
-            return;
-        }
+// Check if the start time is in the future
+if (localStartDateTime <= DateTime.Now)
+{
+ErrorMessage = "The start time must be in the future.";
+return;
+}
 
-        // Check if the end time is after the start time
-        if (localEndDateTime <= localStartDateTime)
-        {
-            ErrorMessage = "The end time must be after the start time.";
-            return;
-        }
-        NavigationManager.NavigateTo($"/roomtable/?Viewing=false&localStartDateTimeString={localStartDateTime}&localEndDateTimeString={localEndDateTime}");
+// Check if the end time is after the start time
+if (localEndDateTime <= localStartDateTime)
+{
+ErrorMessage = "The end time must be after the start time.";
+return;
+}
 
-    }
+if (OnClose.HasDelegate)
+{
+await OnClose.InvokeAsync(null);
+}
+
+NavigationManager.NavigateTo($"/roomtable/?Viewing=false&localStartDateTimeString={localStartDateTime}&localEndDateTimeString={localEndDateTime}");
+}
 }

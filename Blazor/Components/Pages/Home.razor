@@ -1,182 +1,9 @@
-﻿@*
-@page "/"
+﻿@page "/"
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
-@inject AuthenticationStateProvider AuthenticationStateProvider
-@inject UserManager<User> UserManager
-@inject AppDbContext Context
-
-<PageTitle>Home</PageTitle>
-
-<h1 style="color: white; background: rgba(255, 64, 0, 0.7); text-align: center; border-radius: 15px; font-family: Verdana, sans-serif">
-    Welcome to the Eneco Home Page
-</h1>
-
-<style>
-    body {
-        background-image: url('Eneco_building1.jpg');
-        background-position: center;
-        background-size: cover;
-        overflow-x: hidden;
-    }
-
-    .top-row.px-4 {
-        background: rgba(255, 255, 255, 80%) !important;
-    }
-
-    .interactable-image {
-        display: block;
-        margin: 20px 0;
-        width: 50%;
-        border: 2px solid white;
-        border-radius: 10px;
-        cursor: pointer;
-        transition: transform 0.3s;
-    }
-
-    .interactable-image:hover {
-        transform: scale(1.04);
-    }
-
-    .image-container {
-        display: flex;
-        align-items: center;
-    }
-
-    .image-container .interactable-image {
-        margin-left: 20px; /* Adjust this value to control the spacing from the left edge */
-    }
-</style>
-
-<!-- Interactable Image -->
-<div class="image-container">
-    <img src="MockupFloorplan.png" class="interactable-image" @onclick="OnImageClick" />
-</div>
-
-<!-- Your reservations section -->
-<div>
-    <h3>Your reservations</h3>
-    @foreach (var reservation in Reservations)
-    {
-    <div>
-        <p>@reservation.StartDate.ToLocalTime().ToString("F") - @reservation.EndDate.ToLocalTime().ToString("F")</p>
-        <p>@reservation.Bookable?.Id</p>
-    </div>
-    }
-</div>
-
-@code
-{
-private List<Reservation> Reservations { get; set; } = new List<Reservation>();
-private AuthenticationState _authenticationState;
-private User User { get; set; }
-
-protected override async Task OnInitializedAsync()
-{
-_authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-User = await UserManager.FindByNameAsync(_authenticationState.User.Identity.Name);
-Reservations = await Context.Reservations
-.AsQueryable()
-.Where(r => r.UserId == User.Id)
-.Include(r => r.Room)
-.Include(r => r.Workspace)
-.ToListAsync();
-}
-
-private void OnImageClick()
-{
-// Handle the image click event here
-Console.WriteLine("Image clicked!");
-}
-}
-*@
-
-@*SECOND
-@page "/"
-@using Microsoft.AspNetCore.Components.Authorization
-@using Microsoft.AspNetCore.Identity
-@using Microsoft.EntityFrameworkCore
-@inject AuthenticationStateProvider AuthenticationStateProvider
-@inject UserManager<User> UserManager
-@inject AppDbContext Context
-
-<PageTitle>Home</PageTitle>
-
-<h1 style="color: white; background: rgba(255, 64, 0, 0.7); text-align: center; border-radius: 15px; font-family: Verdana, sans-serif">
-    Welcome to the Eneco Home Page
-</h1>
-    
-    
-<!-- Interactable Image with Clickable Area -->
-<div class="image-container">
-    <img src="MockupFloorplan.png" class="interactable-image" usemap="#image-map" />
-    <map name="image-map">
-        <area shape="rect" coords="34,44,270,350" href="javascript:void(0);" @onclick="OnArea1Click" alt="Clickable Area 1" />
-        <area shape="rect" coords="300,50,500,250" href="javascript:void(0);" @onclick="OnArea2Click" alt="Clickable Area 2" />
-        <area shape="rect" coords="550,100,750,400" href="javascript:void(0);" @onclick="OnArea3Click" alt="Clickable Area 3" />
-    </map>
-</div>
-
-<!-- Your reservations section -->
-<div>
-    <h3>Your reservations</h3>
-    @foreach (var reservation in Reservations)
-    {
-        <div>
-            <p>@reservation.StartDate.ToLocalTime().ToString("F") - @reservation.EndDate.ToLocalTime().ToString("F")</p>
-            <p>@reservation.Bookable?.Id</p>
-        </div>
-    }
-</div>
-
-@code {
-    private List<Reservation> Reservations { get; set; } = new List<Reservation>();
-    private AuthenticationState _authenticationState;
-    private User User { get; set; }
-
-    protected override async Task OnInitializedAsync()
-    {
-        _authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        User = await UserManager.FindByNameAsync(_authenticationState.User.Identity.Name);
-        Reservations = await Context.Reservations
-            .AsQueryable()
-            .Where(r => r.UserId == User.Id)
-            .Include(r => r.Room)
-            .Include(r => r.Workspace)
-            .ToListAsync();
-    }
-    
-    private void OnArea1Click()
-    {
-        // Handle the click event for Area 1
-        Console.WriteLine("Area 1 clicked!");
-    }
-
-    private void OnArea2Click()
-    {
-        // Handle the click event for Area 2
-        Console.WriteLine("Area 2 clicked!");
-    }
-
-    private void OnArea3Click()
-    {
-        // Handle the click event for Area 3
-        Console.WriteLine("Area 3 clicked!");
-    }
-    
-    
-    private void OnAreaClick()
-    {
-        Console.WriteLine("Clickable area clicked!");
-        // Add your custom logic here
-    }
-}*@
-
-@page "/"
-@using Microsoft.AspNetCore.Components.Authorization
-@using Microsoft.AspNetCore.Identity
-@using Microsoft.EntityFrameworkCore
+@inject RoomService RoomService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<User> UserManager
 @inject AppDbContext Context
@@ -188,60 +15,114 @@ Console.WriteLine("Image clicked!");
     Welcome to the Eneco Home Page
 </h1>
 <h3>Make a reservation:</h3>
-<button @onclick="() => HandleReservation()">Reserve here</button>
-<h3>Eneco floor plan view</h3>
 
-<!-- Interactable Image with Clickable Area, @onclick="() => OnAreaClick('A')" alt="Wing A" /> -->
-<div class="image-container">
-    <img src="MockupFloorplan.png" class="interactable-image" usemap="#image-map" />
-    <map name="image-map">
-        <area shape="rect" coords="130,350,250,420" href="javascript:void(0);" @onclick="() => HandleReservation()" />
-        <area shape="rect" coords="550,350,700,420" href="javascript:void(0);" @onclick="OnArea2Click" />
-        <area shape="rect" coords="330,680,410,740" href="javascript:void(0);" @onclick="() => HandleReservation()" />
-    </map>
+<label for="floor-select">Select Floor:</label>
+<InputSelect id="floor-select" @bind-Value="selectedFloor">
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+</InputSelect>
+
+
+<button @onclick="HandleReservation"> Select Your time and date</button>
+
+<div class="content-container">
+    <!-- Interactable Image with Clickable Area -->
+    <div class="image-container">
+        <img src="MockupFloorplan.png" class="interactable-image" usemap="#image-map"/>
+        <map name="image-map">
+            <area shape="rect" coords="130,350,250,420" href="javascript:void(0);" @onclick="OnArea1Click"/>
+            <area shape="rect" coords="550,350,700,420" href="javascript:void(0);" @onclick="OnArea2Click"/>
+            <area shape="rect" coords="330,680,410,740" href="javascript:void(0);" @onclick="OnArea3Click"/>
+        </map>
+    </div>
+
+    <!-- Rooms Overview -->
+    <div class="rooms-overview">
+        <h3>Floor @selectedFloor</h3>
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Availability</th>
+                <th>Room Code</th>
+                <th>Room Type</th>
+                <th>Room Name</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var room in Rooms.Where(r => r.FloorNumber == selectedFloor))
+            {
+            <tr @onclick:preventDefault @onclick="() => SelectRoom(room)">
+                <td>@(room.IsAvailable(DateTime.Today, DateTime.Today.AddDays(1)) ? "Available" : "Occupied")</td>
+                <td>@room.RoomCode</td>
+                <td>@room.Type</td>
+                <td>@room.Name</td>
+            </tr>
+            }
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <!-- Your reservations section -->
 <div>
     <h3>Your reservations</h3>
-    @foreach (var reservation in Reservations)
-    {
-    <div>
-        <p>@reservation.StartDate.ToLocalTime().ToString("F") - @reservation.EndDate.ToLocalTime().ToString("F")</p>
-        <p>@reservation.Bookable?.Id</p>
-    </div>
-    }
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Booking ID</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var reservation in Reservations)
+        {
+        <tr>
+            <td>@reservation.StartDate.ToLocalTime().ToString("F")</td>
+            <td>@reservation.EndDate.ToLocalTime().ToString("F")</td>
+            <td>@reservation.Bookable?.Id</td>
+        </tr>
+        }
+        </tbody>
+    </table>
 </div>
 
 @code {
+    
+    
+private int selectedFloor { get; set; } = 1; // Initialize with default value
 private List<Reservation> Reservations { get; set; } = new List<Reservation>();
+private List<Data.Room> Rooms { get; set; } = new List<Data.Room>();
 private AuthenticationState _authenticationState;
 private User User { get; set; }
+private Data.Room? CurrentRoom { get; set; }
 
 protected override async Task OnInitializedAsync()
 {
 _authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
 User = await UserManager.FindByNameAsync(_authenticationState.User.Identity.Name);
+
+// Fetch reservations
 Reservations = await Context.Reservations
 .AsQueryable()
 .Where(r => r.UserId == User.Id)
 .Include(r => r.Room)
 .Include(r => r.Workspace)
 .ToListAsync();
+
+// Fetch rooms
+Rooms = (await RoomService.GetAllRoomsAsync()).ToList();
 }
 
-private async Task HandleReservation()
+private void HandleReservation()
 {
-    NavigationManager.NavigateTo("reservation");
+NavigationManager.NavigateTo($"reservation?floor={selectedFloor}");
 }
 
 private void OnArea1Click()
 {
-// Handling click events:
 Console.WriteLine("Wing A!");
-
-//NavigationManager.NavigateTo($"/reservation?wing={Room.Wing}");
-
 }
 
 private void OnArea2Click()
@@ -253,13 +134,20 @@ private void OnArea3Click()
 {
 Console.WriteLine("That's wing C");
 }
+
+private void SelectRoom(Data.Room room) => CurrentRoom = room;
+
+private async Task DeleteRoom(Guid roomId)
+{
+await RoomService.DeleteRoomAsync(roomId);
+Rooms = (await RoomService.GetAllRoomsAsync()).ToList();
 }
+}
+
 
 <style>
     body {
-        background-image: url('Eneco_building1.jpg');
-        background-position: center;
-        background-size: cover;
+        background-color: white; /* Set background to white */
         overflow-x: hidden;
     }
 
@@ -267,15 +155,27 @@ Console.WriteLine("That's wing C");
         background: rgba(255, 255, 255, 80%) !important;
     }
 
+    .content-container {
+        display: flex;
+        justify-content: space-between;
+        padding: 20px;
+    }
+
     .image-container {
-        position: relative;
+        flex: 1;
         display: flex;
         align-items: flex-start;
     }
 
+    .rooms-overview {
+        flex: 2;
+        padding-left: 20px;
+    }
+
     .interactable-image {
         display: block;
-        width: 50%; 
+        width: 100%;
+        max-width: 600px;
         border: 6px solid #ff5733;
         border-radius: 10px;
         transition: transform 1.3s ease-out;
@@ -283,8 +183,9 @@ Console.WriteLine("That's wing C");
 
     .interactable-image:hover {
         transform: scale(1.05);
-        
     }
 
+    .table {
+        width: 100%;
+    }
 </style>
-
