@@ -1,5 +1,4 @@
 ﻿@page "/"
-@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
@@ -8,12 +7,15 @@
 @inject UserManager<User> UserManager
 @inject AppDbContext Context
 @inject NavigationManager NavigationManager
+@inject ReservationService ReservationService
+
 
 <PageTitle>Home</PageTitle>
 
 <h1 style="color: white; background: rgba(255, 64, 0, 0.7); text-align: center; border-radius: 15px; font-family: Futura, sans-serif">
     Welcome to the Eneco Home Page
 </h1>
+
 <h3>Make a reservation:</h3>
 
 <label for="floor-select">Select Floor:</label>
@@ -23,13 +25,13 @@
     <option value="3">3</option>
 </InputSelect>
 
-
-<button @onclick="HandleReservation"> Select Your time and date</button>
+<!-- Reservation Form Integration -->
+<ReservationForm @ref="reservationForm" />
 
 <div class="content-container">
     <!-- Interactable Image with Clickable Area -->
     <div class="image-container">
-        <img src="MockupFloorplan.png" class="interactable-image" usemap="#image-map"/>
+        <img src="floorplanscreenshot.png" class="interactable-image" usemap="#image-map"/>
         <map name="image-map">
             <area shape="rect" coords="130,350,250,420" href="javascript:void(0);" @onclick="OnArea1Click"/>
             <area shape="rect" coords="550,350,700,420" href="javascript:void(0);" @onclick="OnArea2Click"/>
@@ -43,20 +45,31 @@
         <table class="table table-striped">
             <thead>
             <tr>
-                <th>Availability</th>
+                <!-- <th>Availability</th> -->
                 <th>Room Code</th>
                 <th>Room Type</th>
                 <th>Room Name</th>
+                @if (!Viewing)
+                {
+                <th>Actions</th>
+                }
             </tr>
             </thead>
             <tbody>
             @foreach (var room in Rooms.Where(r => r.FloorNumber == selectedFloor))
             {
             <tr @onclick:preventDefault @onclick="() => SelectRoom(room)">
-                <td>@(room.IsAvailable(DateTime.Today, DateTime.Today.AddDays(1)) ? "Available" : "Occupied")</td>
+                <!--<td>@(room.IsAvailable(DateTime.Today, DateTime.Today.AddDays(1)) ? "Available" : "Occupied")</td>-->
                 <td>@room.RoomCode</td>
                 <td>@room.Type</td>
                 <td>@room.Name</td>
+                @if (!Viewing)
+                {
+                <td>
+                    <button @onclick="() => HandleReservation(room)">Reserve Workspace</button>
+                </td>
+                }
+                
             </tr>
             }
             </tbody>
@@ -89,60 +102,98 @@
 </div>
 
 @code {
-    
-    
 private int selectedFloor { get; set; } = 1; // Initialize with default value
 private List<Reservation> Reservations { get; set; } = new List<Reservation>();
 private List<Data.Room> Rooms { get; set; } = new List<Data.Room>();
-private AuthenticationState _authenticationState;
 private User User { get; set; }
 private Data.Room? CurrentRoom { get; set; }
 
+[SupplyParameterFromForm] public Room? Room { get; set; }
+[SupplyParameterFromQuery] public bool Viewing { get; set; }
+[SupplyParameterFromQuery] public string localStartDateTimeString { get; set; } = string.Empty;
+[SupplyParameterFromQuery] public string localEndDateTimeString { get; set; } = string.Empty;
+
+
+
+private ReservationForm reservationForm;
+
 protected override async Task OnInitializedAsync()
 {
-_authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-User = await UserManager.FindByNameAsync(_authenticationState.User.Identity.Name);
+// Fetch rooms
+Rooms = (await RoomService.GetAllRoomsAsync()).ToList();
 
 // Fetch reservations
+var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+User = await UserManager.FindByNameAsync(authState.User.Identity.Name);
 Reservations = await Context.Reservations
 .AsQueryable()
 .Where(r => r.UserId == User.Id)
 .Include(r => r.Room)
 .Include(r => r.Workspace)
 .ToListAsync();
-
-// Fetch rooms
-Rooms = (await RoomService.GetAllRoomsAsync()).ToList();
-}
-
-private void HandleReservation()
-{
-NavigationManager.NavigateTo($"reservation?floor={selectedFloor}");
 }
 
 private void OnArea1Click()
 {
-Console.WriteLine("Wing A!");
+Console.WriteLine("Clicked on Wing A");
 }
 
 private void OnArea2Click()
 {
-Console.WriteLine("Clicked on wing B");
+Console.WriteLine("Clicked on Wing B");
 }
 
 private void OnArea3Click()
 {
-Console.WriteLine("That's wing C");
+Console.WriteLine("Clicked on Wing C");
 }
 
-private void SelectRoom(Data.Room room) => CurrentRoom = room;
-
-private async Task DeleteRoom(Guid roomId)
+private void SelectRoom(Data.Room room)
 {
-await RoomService.DeleteRoomAsync(roomId);
-Rooms = (await RoomService.GetAllRoomsAsync()).ToList();
+CurrentRoom = room;
+reservationForm.SetRoom(room); // Pass selected room to the reservation form
 }
+
+private async Task HandleReservation(Data.Room room)
+{
+    if (!DateTime.TryParse(localStartDateTimeString, out var localStartDateTime) ||
+        !DateTime.TryParse(localEndDateTimeString, out var localEndDateTime))
+    {
+        // Handle invalid date input (optional)
+        return;
+    }
+
+    var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+    var user = await UserManager.FindByNameAsync(authState.User.Identity?.Name);
+    if (user == null) return;
+
+    var reservation = new Reservation
+    {
+        UserId = Guid.Parse(user.Id).ToString(),
+        RoomId = room.Id,
+        StartDate = TimeZoneInfo.ConvertTimeToUtc(localStartDateTime),
+        EndDate = TimeZoneInfo.ConvertTimeToUtc(localEndDateTime)
+    };
+
+    await ReservationService.CreateReservationAsync(reservation);
+        
+    // Update room, user, and navigate
+    await RoomService.UpdateRoomAsync(room);
+    var index = Rooms.FindIndex(r => r.Id == room.Id);
+    if (index != -1)
+    {
+        Rooms[index] = room;
+    }
+        
+    await UserManager.UpdateAsync(user);
+        
+    NavigationManager.NavigateTo("");
 }
+
+
+
+}
+
 
 
 <style>
