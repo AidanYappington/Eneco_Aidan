@@ -33,6 +33,8 @@ public class Reservation
 
     [Required] public DateTime StartDate { get; set; }
     [Required] public DateTime EndDate { get; set; }
+    [Required] public int Floor { get; set; }
+
     
     public IBookable? Bookable => (IBookable?)Room ?? Workspace;
     public bool SetBookable(Guid bookableId, string type)

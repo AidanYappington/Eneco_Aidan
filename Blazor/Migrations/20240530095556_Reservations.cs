@@ -5,12 +5,18 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Blazor.Migrations
 {
-    /// <inheritdoc />
     public partial class Reservations : Migration
     {
-        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // Add the Floor column to the Reservations table
+            migrationBuilder.AddColumn<int>(
+                name: "Floor",
+                table: "Reservations",
+                type: "int",
+                nullable: false,
+                defaultValue: 0);
+
             migrationBuilder.AddColumn<Guid>(
                 name: "WorkspaceId",
                 table: "Reservations",
@@ -30,7 +36,6 @@ namespace Blazor.Migrations
                 principalColumn: "Id");
         }
 
-        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
@@ -43,6 +48,11 @@ namespace Blazor.Migrations
 
             migrationBuilder.DropColumn(
                 name: "WorkspaceId",
+                table: "Reservations");
+
+            // Remove the Floor column from the Reservations table
+            migrationBuilder.DropColumn(
+                name: "Floor",
                 table: "Reservations");
         }
     }

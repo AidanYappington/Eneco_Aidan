@@ -31,6 +31,9 @@ namespace Blazor.Migrations
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("Floor")
+                        .HasColumnType("integer");
+
                     b.Property<Guid?>("RoomId")
                         .HasColumnType("uuid");
 
