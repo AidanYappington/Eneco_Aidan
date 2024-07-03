@@ -14,7 +14,6 @@
     <table class="table table-striped">
         <thead>
         <tr>
-            <th>Availability</th>
             <th>Room Code</th>
             <th>Room Type</th>
             <th>Room Name</th>
@@ -28,7 +27,6 @@
         @foreach (var room in Rooms.Where(r => r.FloorNumber == floor).OrderBy(r => r.RoomCode))
         {
             <tr>
-                <td>@(IsRoomAvailable(room) ? "Available" : "Occupied")</td>
                 <td>@room.RoomCode</td>
                 <td>@room.Type</td>
                 <td>@room.Name</td>

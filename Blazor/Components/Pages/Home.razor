@@ -9,8 +9,6 @@
 @inject ReservationService ReservationService
 @inject RoomService RoomService
 
-
-
 <PageTitle>Home</PageTitle>
 
 <h1 style="color: white; background: rgba(255, 64, 0, 0.7); text-align: center; border-radius: 15px; font-family: Futura, sans-serif">
@@ -19,289 +17,277 @@
 
 <h3>Your data:</h3>
 
-<!-- Notification message -->
 @if (!string.IsNullOrEmpty(NotificationMessage))
 {
-<div class="alert alert-warning">
-    @NotificationMessage
+    <div class="alert alert-warning">
+        @NotificationMessage
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(SuccesMessage))
+{
+<div class="alert alert-success">
+    @SuccesMessage
 </div>
 }
 
-@*<label for="floor-select">Select Floor:</label>
-<InputSelect id="floor-select" @bind-Value="selectedFloor">
-    <option value="1">1</option>
-    <option value="2">2</option>
-    <option value="3">3</option>
-</InputSelect>*@
-
-<!-- Reservation Form Integration -->
-@*
-<ReservationForm @ref="reservationForm" OnTemporarySave="HandleTemporarySave" />
-*@
 <ReservationForm @ref="reservationForm" OnTemporaryReservationChange="HandleTemporaryReservationChange" />
-
 
 <h3>Click a room to make a reservation:</h3>
 
 <div class="content-container">
-    <!-- Interactable Image with Clickable Area -->
     <div class="image-container">
-        <img src="floorplanscreenshot.png" class="interactable-image" usemap="#image-map"/>
+        <img src="plattegrond-driehoek.png" class="interactable-image" usemap="#image-map"/>
         <map name="image-map">
-            <area shape="rect" coords="130,350,250,420" href="javascript:void(0);" @onclick="OnArea1Click"/>
-            <area shape="rect" coords="550,350,700,420" href="javascript:void(0);" @onclick="OnArea2Click"/>
+            <area shape="rect" coords="80,340,140,410" href="javascript:void(0);" @onclick="OnArea1Click"/>
+            <area shape="rect" coords="90,280,160,380" href="javascript:void(0);" @onclick="OnArea2Click"/>
             <area shape="rect" coords="330,680,410,740" href="javascript:void(0);" @onclick="OnArea3Click"/>
         </map>
     </div>
 
-    <!-- Rooms Overview -->
     <div class="rooms-overview">
         <h3>Floor @selectedFloor</h3>
         <table class="table table-striped">
             <thead>
-            <tr>
-                <th>Availability</th>
-                <th>Room Code</th>
-                <th>Room Type</th>
-                <th>Room Name</th>
-                @if (!Viewing)
-                {
-                    <th>Actions</th>
-                }
-            </tr>
+                <tr>
+                    <th>Availability</th>
+                    <th>Room Code</th>
+                    <th>Room Type</th>
+                    <th>Room Name</th>
+                </tr>
             </thead>
             <tbody>
-            @foreach (var room in Rooms.Where(r => r.FloorNumber == selectedFloor).OrderBy(r => r.RoomCode))
-            {
-            <tr>
-                <td>@(IsRoomAvailable(room) ? "Available" : "Available")</td>
-                <td>@room.RoomCode</td>
-                <td>@room.Type</td>
-                <td>@room.Name</td>
-                @if (!Viewing)
+                @foreach (var room in Rooms.Where(r => r.FloorNumber == selectedFloor).OrderBy(r => r.RoomCode))
                 {
-                <td>
-                    <button @onclick="() => HandleReservation(room)">Reserve Workspace</button>
-                </td>
+                    <tr>
+                        <td>@(IsRoomAvailable(room) ? "Available" : "Occupied")</td>
+                        <td>@room.RoomCode</td>
+                        <td>@room.Type</td>
+                        <td>@room.Name</td>
+                    </tr>
                 }
-            </tr>
-            }
             </tbody>
         </table>
     </div>
 </div>
 
-<!-- Your reservations section -->
 <div>
     <h3>Your reservations</h3>
     <table class="table table-striped">
         <thead>
         <tr>
-            @*
             <th>Room Code</th>
-            *@
             <th>Start Date</th>
             <th>End Date</th>
             <th>Booking ID</th>
+
+
         </tr>
         </thead>
         <tbody>
-        @foreach (var reservation in Reservations)
-        {
-            <tr>
-                @*
-                <td>@reservation.RoomId("F")</td>
-                *@
-                <td>@reservation.StartDate.ToLocalTime().ToString("F")</td>
-                <td>@reservation.EndDate.ToLocalTime().ToString("F")</td>
-                <td>@reservation.RoomId</td>
-            </tr>
-        }
+            @foreach (var reservation in Reservations)
+            {
+                <tr>
+                    <td>@reservation.Room.RoomCode</td>
+                    <td>@reservation.StartDate.ToLocalTime().ToString("F")</td>
+                    <td>@reservation.EndDate.ToLocalTime().ToString("F")</td>
+                    <td>@reservation.RoomId</td>
+
+                </tr>
+            }
         </tbody>
     </table>
 </div>
 
 @code {
-private int selectedFloor { get; set; } = 1; // Initialize with default value
-private List<Reservation> Reservations { get; set; } = new List<Reservation>();
-private List<Data.Room> Rooms { get; set; } = new List<Data.Room>();
-private User User { get; set; }
-private Data.Room? CurrentRoom { get; set; }
-private AuthenticationState _authenticationState;
+    private int selectedFloor { get; set; } = 1;
+    private List<Reservation> Reservations { get; set; } = new List<Reservation>();
+    private List<Data.Room> Rooms { get; set; } = new List<Data.Room>();
+    private User User { get; set; }
+    private Data.Room? CurrentRoom { get; set; }
+    private AuthenticationState _authenticationState;
+    private ReservationForm reservationForm;
+    private Reservation temporaryReservation;
+    private string NotificationMessage { get; set; } = string.Empty;
+    private string SuccesMessage { get; set; } = string.Empty;
 
 
-[SupplyParameterFromForm] public Room? Room { get; set; }
-[SupplyParameterFromQuery] public bool Viewing { get; set; }
-[SupplyParameterFromQuery] public string localStartDateTimeString { get; set; } = string.Empty;
-[SupplyParameterFromQuery] public string localEndDateTimeString { get; set; } = string.Empty;
+    [SupplyParameterFromForm] public Room? Room { get; set; }
+    [SupplyParameterFromQuery] public bool Viewing { get; set; }
+    [SupplyParameterFromQuery] public string localStartDateTimeString { get; set; } = string.Empty;
+    [SupplyParameterFromQuery] public string localEndDateTimeString { get; set; } = string.Empty;
 
-private ReservationForm reservationForm;
-private Reservation temporaryReservation;
-private string NotificationMessage { get; set; } = string.Empty;
-
-
-
-protected override async Task OnInitializedAsync()
-{
-    // pakken van alle rooms
-    Rooms = (await RoomService.GetAllRoomsAsync()).ToList();
-
-    // pakken van de reserveringen
-    var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-    User = await UserManager.FindByNameAsync(authState.User.Identity.Name);
-    Reservations = await Context.Reservations
-        .AsQueryable()
-        .Where(r => r.UserId == User.Id)
-        .Include(r => r.Room)
-        .Include(r => r.Workspace)
-        .ToListAsync();
-    
-    Rooms = (await RoomService.GetAllRoomsAsync()).ToList();
-    Reservations = (await ReservationService.GetAllReservationsAsync()).ToList();
-    _authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-}
-
-private bool IsRoomAvailable(Room room)
-{
-    
-    if (!DateTime.TryParse(localStartDateTimeString, out var localStartDateTime) ||
-        !DateTime.TryParse(localEndDateTimeString, out var localEndDateTime))
+    protected override async Task OnInitializedAsync()
     {
-        return false;
+        Rooms = (await RoomService.GetAllRoomsAsync()).ToList();
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        User = await UserManager.FindByNameAsync(authState.User.Identity.Name);
+        
+        Reservations = await Context.Reservations
+            .AsQueryable()
+            .Where(r => r.UserId == User.Id)
+            .Include(r => r.Room)
+            .ToListAsync();
+        
+        _authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
     }
 
-    return Reservations.Where(r => r.RoomId == room.Id).All(
-        reservation => localStartDateTime >= reservation.EndDate 
-                       || localEndDateTime <= reservation.StartDate);
-}
-
-
-
-private void HandleTemporaryReservationChange((Reservation reservation, int floor)data)
-{
-    temporaryReservation = data.reservation;
-    selectedFloor = data.floor;
-    // Optionally, perform further actions with temporaryReservation
-}
-
-public async Task OnArea1Click()
-{
-    Guid roomid;
-    
-    if (selectedFloor == 1)
+    private bool IsRoomAvailable(Room room)
     {
-        roomid = new Guid("17d0175e-11b1-42a0-a6e5-77a36172fc2a");
+        if (temporaryReservation == null)
+        {
+            //Console.WriteLine("Temporary reservation is not set.");
+            return false;
+        }
+
+        var localStartDateTime = temporaryReservation.StartDate;
+        var localEndDateTime = temporaryReservation.EndDate;
+
+        //.WriteLine("Checking availability for room {0}", room.RoomCode);
+        //Console.WriteLine("Checking against dates. Start: {0}, End: {1}", localStartDateTime, localEndDateTime);
+
+        foreach (var reservation in Reservations.Where(r => r.RoomId == room.Id))
+        {
+            //Console.WriteLine("Reservation found: Start {0}, End {1}", reservation.StartDate, reservation.EndDate);
+            if (!(localStartDateTime >= reservation.EndDate || localEndDateTime <= reservation.StartDate))
+            {
+                //Console.WriteLine("Room {0} is occupied during this period.", room.RoomCode);
+                return false;
+            }
+        }
+
+        Console.WriteLine("Room {0} is available.", room.RoomCode);
+        return true;
     }
 
-    else if (selectedFloor == 2)
+
+    private void HandleTemporaryReservationChange((Reservation reservation, int floor) data)
     {
-        roomid = new Guid("bb4e6e79-f3b7-45de-8f61-49a2fd8915b5");
-
-    }
-    else if (selectedFloor == 3)
-    {
-        roomid = new Guid("da629c62-6454-4814-b703-63e355f59592");
-
-    }
-    else
-    {
-        NotificationMessage = "Please select + save your date and time for the reservation.";
-        return;
-    }
-    
-    /*if (temporaryReservation == null)
-    {
-        // Handle missing temporary reservation
-        NotificationMessage = "Please select + save your date and time for the reservation.";
-        return;
-    }*/
-
-    /*if (!DateTime.TryParse(localStartDateTimeString, out var localStartDateTime) ||
-        !DateTime.TryParse(localEndDateTimeString, out var localEndDateTime))
-    {
-        // Handle invalid date input (optional)
-        return;
-    }*/
-    
-    Console.WriteLine("TWO STEP");
-
-    
-    var user = await UserManager.FindByNameAsync(_authenticationState.User.Identity?.Name);
-    if (user == null) return;
-
-    Console.WriteLine("oi butcher");
-
-    
-    var reservation = new Reservation
-    {
-        UserId = Guid.Parse(user.Id).ToString(),
-        RoomId = roomid,
-        StartDate = TimeZoneInfo.ConvertTimeToUtc(temporaryReservation.StartDate),
-        EndDate = TimeZoneInfo.ConvertTimeToUtc(temporaryReservation.EndDate),
-            
-    };
-    
-    await ReservationService.CreateReservationAsync(reservation);
-    
-}
-
-private void OnArea2Click()
-{
-    selectedFloor = 2;
-    Console.WriteLine("Clicked on Wing B");
-}
-
-private void OnArea3Click()
-{
-    selectedFloor = 3;
-    Console.WriteLine("Clicked on Wing C");
-}
-
-private void SelectRoom(Data.Room room)
-{
-    CurrentRoom = room;
-    reservationForm.SetRoom(room); // Pass selected room to the reservation form
-}
-
-private async Task HandleReservation(Data.Room room)
-{
-    /*if (!DateTime.TryParse(localStartDateTimeString, out var localStartDateTime) ||
-        !DateTime.TryParse(localEndDateTimeString, out var localEndDateTime))
-    {
-        // Handle invalid date input (optional)
-        return;
-    }*/
-    
-    
-
-    var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-    var user = await UserManager.FindByNameAsync(authState.User.Identity?.Name);
-    if (user == null) return;
-
-    var reservation = new Reservation
-    {
-        UserId = Guid.Parse(user.Id).ToString(),
-        RoomId = room.Id,
-        StartDate = TimeZoneInfo.ConvertTimeToUtc(temporaryReservation.StartDate),
-        EndDate = TimeZoneInfo.ConvertTimeToUtc(temporaryReservation.EndDate)
-    };
-
-    await ReservationService.CreateReservationAsync(reservation);
-
-    // Update room, user, and navigate
-    await RoomService.UpdateRoomAsync(room);
-    var index = Rooms.FindIndex(r => r.Id == room.Id);
-    if (index != -1)
-    {
-        Rooms[index] = room;
+        temporaryReservation = data.reservation;
+        selectedFloor = data.floor;
     }
 
-    await UserManager.UpdateAsync(user);
+    public async Task OnArea1Click()
+    {
+        Console.WriteLine("2a");
 
-    NavigationManager.NavigateTo("");
-}
+        Guid roomid = selectedFloor switch
+        {
+            1 => new Guid("566b5f3b-1692-4b07-b9cd-4c297dd32c39"),
+            2 => new Guid("1115c04f-ae59-43aa-98bb-36190e1cbcfc"),
+            3 => new Guid("46a234e2-d73c-445c-975a-3e3b00acfc41"),
+            _ => Guid.Empty
+        };
 
+        if (roomid == Guid.Empty)
+        {
+            NotificationMessage = "Please select + save your date and time for the reservation.";
+            return;
+        }
 
+        if (temporaryReservation == null)
+        {
+            NotificationMessage = "Please select + save your date and time for the reservation.";
+            return;
+        }
+
+        var user = await UserManager.FindByNameAsync(_authenticationState.User.Identity?.Name);
+        if (user == null)
+        {
+            NotificationMessage = "User not found. Please log in.";
+            return;
+        }
+
+        var reservation = new Reservation
+        {
+            UserId = Guid.Parse(user.Id).ToString(),
+            RoomId = roomid,
+            StartDate = TimeZoneInfo.ConvertTimeToUtc(temporaryReservation.StartDate),
+            EndDate = TimeZoneInfo.ConvertTimeToUtc(temporaryReservation.EndDate),
+        };
+
+        await ReservationService.CreateReservationAsync(reservation);
+        SuccesMessage = "Reservation has been successfully made.";
+    }
+
+    public async Task OnArea2Click()
+    {
+        
+        Console.WriteLine("2a");
+        Guid roomid = selectedFloor switch
+        {
+            1 => new Guid("79c30185-17b6-420a-8db2-1dae4fa168ac"),
+            2 => new Guid("9cf8eab1-e4e4-4781-9df2-3853374df9ed"),
+            3 => new Guid("37b50136-2560-470e-a10c-49e783b2e9c6"),
+            _ => Guid.Empty
+        };
+
+        if (roomid == Guid.Empty)
+        {
+            NotificationMessage = "Please select + save your date and time for the reservation.";
+            return;
+        }
+
+        if (temporaryReservation == null)
+        {
+            NotificationMessage = "Please select + save your date and time for the reservation.";
+            return;
+        }
+
+        var user = await UserManager.FindByNameAsync(_authenticationState.User.Identity?.Name);
+        if (user == null)
+        {
+            NotificationMessage = "User not found. Please log in.";
+            return;
+        }
+
+        var reservation = new Reservation
+        {
+            UserId = Guid.Parse(user.Id).ToString(),
+            RoomId = roomid,
+            StartDate = TimeZoneInfo.ConvertTimeToUtc(temporaryReservation.StartDate),
+            EndDate = TimeZoneInfo.ConvertTimeToUtc(temporaryReservation.EndDate),
+        };
+
+        await ReservationService.CreateReservationAsync(reservation);
+        SuccesMessage = "Reservation has been successfully made.";
+    }
+
+    private void OnArea3Click() => selectedFloor = 3;
+
+    private async Task HandleReservation(Data.Room room)
+    {
+        if (temporaryReservation == null)
+        {
+            NotificationMessage = "Please select + save your date and time for the reservation.";
+            return;
+        }
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = await UserManager.FindByNameAsync(authState.User.Identity?.Name);
+        if (user == null) return;
+
+        var reservation = new Reservation
+        {
+            UserId = Guid.Parse(user.Id).ToString(),
+            RoomId = room.Id,
+            StartDate = TimeZoneInfo.ConvertTimeToUtc(temporaryReservation.StartDate),
+            EndDate = TimeZoneInfo.ConvertTimeToUtc(temporaryReservation.EndDate)
+        };
+
+        await ReservationService.CreateReservationAsync(reservation);
+
+        await RoomService.UpdateRoomAsync(room);
+        var index = Rooms.FindIndex(r => r.Id == room.Id);
+        if (index != -1)
+        {
+            Rooms[index] = room;
+        }
+
+        await UserManager.UpdateAsync(user);
+        NavigationManager.NavigateTo("");
+    }
 }
 
 
