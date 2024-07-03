@@ -38,13 +38,15 @@
 <div class="content-container">
     <div class="image-container">               @*Picture of a floor plan with 4 interactive fields corresponding to 
                                                     4 rooms*@
-        <img src="../../wwwroot/Floorplan.png" class="interactable-image" usemap="#image-map"/>
+        <img src="Floorplan.png" class="interactable-image" usemap="#image-map"/>
         <map name="image-map">
             <area shape="rect" coords="80,340,140,410" href="javascript:void(0);" @onclick="OnArea1Click"/> @* 1A*@
             <area shape="rect" coords="90,280,160,310" href="javascript:void(0);" @onclick="OnArea2Click"/> @* 2A*@
             <area shape="rect" coords="140,190,200,240" href="javascript:void(0);" @onclick="OnArea3Click"/> @* 3A*@
             <area shape="rect" coords="210,100,260,180" href="javascript:void(0);" @onclick="OnArea4Click"/> @* 4A*@
-            
+            <area shape="rect" coords="320,110,360,190" href="javascript:void(0);" @onclick="OnArea4Click"/> @* 5B*@
+
+
         </map>
     </div>
 
