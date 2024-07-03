@@ -37,11 +37,13 @@
 
 <div class="content-container">
     <div class="image-container">
-        <img src="plattegrond-driehoek.png" class="interactable-image" usemap="#image-map"/>
+        <img src="../../wwwroot/Floorplan.png" class="interactable-image" usemap="#image-map"/>
         <map name="image-map">
             <area shape="rect" coords="80,340,140,410" href="javascript:void(0);" @onclick="OnArea1Click"/>
-            <area shape="rect" coords="90,280,160,380" href="javascript:void(0);" @onclick="OnArea2Click"/>
-            <area shape="rect" coords="330,680,410,740" href="javascript:void(0);" @onclick="OnArea3Click"/>
+            <area shape="rect" coords="90,280,160,310" href="javascript:void(0);" @onclick="OnArea2Click"/>
+            <area shape="rect" coords="140,190,200,240" href="javascript:void(0);" @onclick="OnArea3Click"/>
+            <area shape="rect" coords="210,100,260,180" href="javascript:void(0);" @onclick="OnArea4Click"/>
+            
         </map>
     </div>
 
@@ -137,89 +139,86 @@
     {
         if (temporaryReservation == null)
         {
-            //Console.WriteLine("Temporary reservation is not set.");
             return false;
         }
 
         var localStartDateTime = temporaryReservation.StartDate;
         var localEndDateTime = temporaryReservation.EndDate;
 
-        //.WriteLine("Checking availability for room {0}", room.RoomCode);
-        //Console.WriteLine("Checking against dates. Start: {0}, End: {1}", localStartDateTime, localEndDateTime);
 
         foreach (var reservation in Reservations.Where(r => r.RoomId == room.Id))
         {
-            //Console.WriteLine("Reservation found: Start {0}, End {1}", reservation.StartDate, reservation.EndDate);
             if (!(localStartDateTime >= reservation.EndDate || localEndDateTime <= reservation.StartDate))
             {
-                //Console.WriteLine("Room {0} is occupied during this period.", room.RoomCode);
                 return false;
             }
         }
 
-        Console.WriteLine("Room {0} is available.", room.RoomCode);
         return true;
     }
 
 
     private void HandleTemporaryReservationChange((Reservation reservation, int floor) data)
     {
+        NotificationMessage = string.Empty; // Clear notification message
+
         temporaryReservation = data.reservation;
         selectedFloor = data.floor;
     }
 
-    public async Task OnArea1Click()
-    {
-        Console.WriteLine("2a");
-
-        Guid roomid = selectedFloor switch
-        {
-            1 => new Guid("566b5f3b-1692-4b07-b9cd-4c297dd32c39"),
-            2 => new Guid("1115c04f-ae59-43aa-98bb-36190e1cbcfc"),
-            3 => new Guid("46a234e2-d73c-445c-975a-3e3b00acfc41"),
-            _ => Guid.Empty
-        };
-
-        if (roomid == Guid.Empty)
-        {
-            NotificationMessage = "Please select + save your date and time for the reservation.";
-            return;
-        }
-
-        if (temporaryReservation == null)
-        {
-            NotificationMessage = "Please select + save your date and time for the reservation.";
-            return;
-        }
-
-        var user = await UserManager.FindByNameAsync(_authenticationState.User.Identity?.Name);
-        if (user == null)
-        {
-            NotificationMessage = "User not found. Please log in.";
-            return;
-        }
-
-        var reservation = new Reservation
-        {
-            UserId = Guid.Parse(user.Id).ToString(),
-            RoomId = roomid,
-            StartDate = TimeZoneInfo.ConvertTimeToUtc(temporaryReservation.StartDate),
-            EndDate = TimeZoneInfo.ConvertTimeToUtc(temporaryReservation.EndDate),
-        };
-
-        await ReservationService.CreateReservationAsync(reservation);
-        SuccesMessage = "Reservation has been successfully made.";
+    public async Task OnArea1Click()        //these codes represent a room, when i select floor one and click on room 1a it will use
+                                            // the first roomid 566b5f3b-1692-4b07-b9cd-4c297dd32c39, but when i select floor 3..
+                                            // it will use room id ebff2096-e80a-4274-99ec-16e55df5c4b5
+    {       
+        await HandleAreaClick(selectedFloor,   
+            new Guid("566b5f3b-1692-4b07-b9cd-4c297dd32c39"),
+            new Guid("1115c04f-ae59-43aa-98bb-36190e1cbcfc"),
+            new Guid("ebff2096-e80a-4274-99ec-16e55df5c4b5"));
     }
 
     public async Task OnArea2Click()
     {
-        
-        Console.WriteLine("2a");
-        Guid roomid = selectedFloor switch
+        await HandleAreaClick(selectedFloor, 
+            new Guid("79c30185-17b6-420a-8db2-1dae4fa168ac"),
+            new Guid("9cf8eab1-e4e4-4781-9df2-3853374df9ed"),
+            new Guid("37b50136-2560-470e-a10c-49e783b2e9c6"));
+    }
+    
+    public async Task OnArea3Click()
+    {
+        await HandleAreaClick(selectedFloor, 
+            new Guid("566b5f3b-1692-4b07-b9cd-4c297dd32c39"),
+            new Guid("0d2dfa7b-1ad2-4b04-8986-37e53e5a1e30"),
+            new Guid("24162354-a784-48d8-bba6-05d30ad2b57f"));
+    }
+    
+    public async Task OnArea4Click()
+    {
+        await HandleAreaClick(selectedFloor, 
+            new Guid("f3a770dd-2296-4d62-8382-bea4fd301703"),
+            new Guid("fdf24957-4aa3-45fc-bbf1-dc72aba086b6"),
+            new Guid("dfbc83cf-62c0-4f28-9fff-dbcc54af2b86"));
+    }
+    
+    public async Task OnArea5Click()
+    {
+        await HandleAreaClick(selectedFloor, 
+            new Guid("79c30185-17b6-420a-8db2-1dae4fa168ac"),
+            new Guid("9cf8eab1-e4e4-4781-9df2-3853374df9ed"),
+            new Guid("37b50136-2560-470e-a10c-49e783b2e9c6"));
+    }
+
+    private async Task HandleAreaClick(int floor, Guid roomId1, Guid roomId2, Guid roomId3)
+    {
+        Console.WriteLine("Hello Mevrouw");
+        NotificationMessage = string.Empty; // Clear notification message
+
+
+        Guid roomid = floor switch
         {
-            1 => new Guid("79c30185-17b6-420a-8db2-1dae4fa168ac"),
-            2 => new Guid("9cf8eab1-e4e4-4781-9df2-3853374df9ed"),
-            3 => new Guid("37b50136-2560-470e-a10c-49e783b2e9c6"),
+            1 => roomId1,
+            2 => roomId2,
+            3 => roomId3,
             _ => Guid.Empty
         };
 
@@ -241,6 +240,16 @@
             NotificationMessage = "User not found. Please log in.";
             return;
         }
+        
+        DateTime startDateUtc = TimeZoneInfo.ConvertTimeToUtc(temporaryReservation.StartDate);
+        DateTime endDateUtc = TimeZoneInfo.ConvertTimeToUtc(temporaryReservation.EndDate);
+
+        bool isAvailable = await IsRoomAvailableForReservation(roomid, startDateUtc, endDateUtc);
+        if (!isAvailable)
+        {
+            NotificationMessage = "The room is already reserved for the selected time period.";
+            return;
+        }
 
         var reservation = new Reservation
         {
@@ -253,41 +262,18 @@
         await ReservationService.CreateReservationAsync(reservation);
         SuccesMessage = "Reservation has been successfully made.";
     }
-
-    private void OnArea3Click() => selectedFloor = 3;
-
-    private async Task HandleReservation(Data.Room room)
+    
+    private async Task<bool> IsRoomAvailableForReservation(Guid roomId, DateTime startDate, DateTime endDate)
     {
-        if (temporaryReservation == null)
-        {
-            NotificationMessage = "Please select + save your date and time for the reservation.";
-            return;
-        }
+        var overlappingReservations = await Context.Reservations
+            .Where(r => r.RoomId == roomId && 
+                        r.StartDate < endDate && 
+                        r.EndDate > startDate)
+            .ToListAsync();
 
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = await UserManager.FindByNameAsync(authState.User.Identity?.Name);
-        if (user == null) return;
-
-        var reservation = new Reservation
-        {
-            UserId = Guid.Parse(user.Id).ToString(),
-            RoomId = room.Id,
-            StartDate = TimeZoneInfo.ConvertTimeToUtc(temporaryReservation.StartDate),
-            EndDate = TimeZoneInfo.ConvertTimeToUtc(temporaryReservation.EndDate)
-        };
-
-        await ReservationService.CreateReservationAsync(reservation);
-
-        await RoomService.UpdateRoomAsync(room);
-        var index = Rooms.FindIndex(r => r.Id == room.Id);
-        if (index != -1)
-        {
-            Rooms[index] = room;
-        }
-
-        await UserManager.UpdateAsync(user);
-        NavigationManager.NavigateTo("");
+        return !overlappingReservations.Any();
     }
+
 }
 
 
