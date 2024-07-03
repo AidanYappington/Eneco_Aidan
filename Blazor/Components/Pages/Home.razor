@@ -17,14 +17,14 @@
 
 <h3>Your data:</h3>
 
-@if (!string.IsNullOrEmpty(NotificationMessage))
+@if (!string.IsNullOrEmpty(NotificationMessage)) // Notifications when you press the room instead of saving data first
 {
     <div class="alert alert-warning">
         @NotificationMessage
     </div>
 }
 
-@if (!string.IsNullOrEmpty(SuccesMessage))
+@if (!string.IsNullOrEmpty(SuccesMessage)) // Notification when you succesfully made a reservation
 {
 <div class="alert alert-success">
     @SuccesMessage
@@ -36,18 +36,22 @@
 <h3>Click a room to make a reservation:</h3>
 
 <div class="content-container">
-    <div class="image-container">
+    <div class="image-container">               @*Picture of a floor plan with 4 interactive fields corresponding to 
+                                                    4 rooms*@
         <img src="../../wwwroot/Floorplan.png" class="interactable-image" usemap="#image-map"/>
         <map name="image-map">
-            <area shape="rect" coords="80,340,140,410" href="javascript:void(0);" @onclick="OnArea1Click"/>
-            <area shape="rect" coords="90,280,160,310" href="javascript:void(0);" @onclick="OnArea2Click"/>
-            <area shape="rect" coords="140,190,200,240" href="javascript:void(0);" @onclick="OnArea3Click"/>
-            <area shape="rect" coords="210,100,260,180" href="javascript:void(0);" @onclick="OnArea4Click"/>
+            <area shape="rect" coords="80,340,140,410" href="javascript:void(0);" @onclick="OnArea1Click"/> @* 1A*@
+            <area shape="rect" coords="90,280,160,310" href="javascript:void(0);" @onclick="OnArea2Click"/> @* 2A*@
+            <area shape="rect" coords="140,190,200,240" href="javascript:void(0);" @onclick="OnArea3Click"/> @* 3A*@
+            <area shape="rect" coords="210,100,260,180" href="javascript:void(0);" @onclick="OnArea4Click"/> @* 4A*@
             
         </map>
     </div>
 
-    <div class="rooms-overview">
+    @* This is responsible for the room overview, it only shows the rooms on the saved/selected floor *@
+
+
+    <div class="rooms-overview">                    
         <h3>Floor @selectedFloor</h3>
         <table class="table table-striped">
             <thead>
@@ -73,6 +77,7 @@
     </div>
 </div>
 
+@* Under this is the reservation overview *@
 <div>
     <h3>Your reservations</h3>
     <table class="table table-striped">
@@ -153,7 +158,6 @@
                 return false;
             }
         }
-
         return true;
     }
 
@@ -162,8 +166,8 @@
     {
         NotificationMessage = string.Empty; // Clear notification message
 
-        temporaryReservation = data.reservation;
-        selectedFloor = data.floor;
+        temporaryReservation = data.reservation; // Putting the reservation data in this file so that you can use it in methods here
+        selectedFloor = data.floor; // Siwtch the floors so that when you save your data it shows the rooms of the correct floor on the homepage
     }
 
     public async Task OnArea1Click()        //these codes represent a room, when i select floor one and click on room 1a it will use
@@ -208,7 +212,7 @@
             new Guid("37b50136-2560-470e-a10c-49e783b2e9c6"));
     }
 
-    private async Task HandleAreaClick(int floor, Guid roomId1, Guid roomId2, Guid roomId3)
+    private async Task HandleAreaClick(int floor, Guid roomId1, Guid roomId2, Guid roomId3) // method that creates a reservation
     {
         Console.WriteLine("Hello Mevrouw");
         NotificationMessage = string.Empty; // Clear notification message
@@ -216,7 +220,7 @@
 
         Guid roomid = floor switch
         {
-            1 => roomId1,
+            1 => roomId1,               // This is where the method chooses the right room
             2 => roomId2,
             3 => roomId3,
             _ => Guid.Empty
@@ -234,7 +238,7 @@
             return;
         }
 
-        var user = await UserManager.FindByNameAsync(_authenticationState.User.Identity?.Name);
+        var user = await UserManager.FindByNameAsync(_authenticationState.User.Identity?.Name); 
         if (user == null)
         {
             NotificationMessage = "User not found. Please log in.";
@@ -244,14 +248,14 @@
         DateTime startDateUtc = TimeZoneInfo.ConvertTimeToUtc(temporaryReservation.StartDate);
         DateTime endDateUtc = TimeZoneInfo.ConvertTimeToUtc(temporaryReservation.EndDate);
 
-        bool isAvailable = await IsRoomAvailableForReservation(roomid, startDateUtc, endDateUtc);
+        bool isAvailable = await IsRoomAvailableForReservation(roomid, startDateUtc, endDateUtc); // Checking if the Room datetime of the room overlaps with other rooms
         if (!isAvailable)
         {
             NotificationMessage = "The room is already reserved for the selected time period.";
             return;
         }
 
-        var reservation = new Reservation
+        var reservation = new Reservation               // The reservation gets set up here with the user id, roomid and date/time of the saved data
         {
             UserId = Guid.Parse(user.Id).ToString(),
             RoomId = roomid,
@@ -259,11 +263,11 @@
             EndDate = TimeZoneInfo.ConvertTimeToUtc(temporaryReservation.EndDate),
         };
 
-        await ReservationService.CreateReservationAsync(reservation);
+        await ReservationService.CreateReservationAsync(reservation); // The reservation gets made
         SuccesMessage = "Reservation has been successfully made.";
     }
     
-    private async Task<bool> IsRoomAvailableForReservation(Guid roomId, DateTime startDate, DateTime endDate)
+    private async Task<bool> IsRoomAvailableForReservation(Guid roomId, DateTime startDate, DateTime endDate) 
     {
         var overlappingReservations = await Context.Reservations
             .Where(r => r.RoomId == roomId && 

@@ -12,10 +12,10 @@
     <div class="alert alert-danger">@ErrorMessage</div>
 }
 
-<EditForm Model="Reservation" OnValidSubmit="HandleSubmit">
+<EditForm Model="Reservation" OnValidSubmit="HandleSubmit">             @* This form is responsible for the save data menu on the homepage *@
     <div>
         <label for="floor-select">Select Floor:</label>
-        <InputSelect id="floor-select" @bind-Value="selectedFloor">
+        <InputSelect id="floor-select" @bind-Value="selectedFloor">             
             <option value="1">1</option>
             <option value="2">2</option>
             <option value="3">3</option>
@@ -66,7 +66,7 @@
         </select>
     </div>
     <div>
-        <button type="button" @onclick="SaveTemporary">Save</button>
+        <button type="button" @onclick="SaveTemporary">Save</button>  @* The save button that temporary saves the info *@
     </div>
 </EditForm>
 
@@ -194,20 +194,21 @@
 
     private void SaveTemporary()
     {
-        temporaryReservation = new Reservation
+        temporaryReservation = new Reservation  // When you press save on the homepage, you save all the selected data..
+        
         {
             StartDate = new DateTime(SelectedDate.Year, SelectedDate.Month, SelectedDate.Day, StartHour, StartMinute, 0),
             EndDate = new DateTime(SelectedDate.Year, SelectedDate.Month, SelectedDate.Day, EndHour, EndMinute, 0),
             Floor = selectedFloor
         };
         
-        //OnTemporarySave.InvokeAsync(selectedFloor);
-        OnTemporaryReservationChange.InvokeAsync((temporaryReservation, selectedFloor));
+        
+        OnTemporaryReservationChange.InvokeAsync((temporaryReservation, selectedFloor)); //it passes the info on to method: OnTemporaryReservationChange on the homepage
 
     }
 
     private async Task HandleSubmit()
     {
-        // Handle submission logic here
+        // not implemented/not needed yet
     }
 }
