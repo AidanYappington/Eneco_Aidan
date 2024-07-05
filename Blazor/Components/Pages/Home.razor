@@ -50,10 +50,10 @@
             <area shape="rect" coords="440,270,500,320" href="javascript:void(0);" @onclick="OnArea7Click"/> @* 7B*@
             <area shape="rect" coords="490,340,550,420" href="javascript:void(0);" @onclick="OnArea8Click"/> @* 8B*@
 
-            <area shape="rect" coords="130,450,190,510" href="javascript:void(0);" @onclick="OnArea12Click"/>
-            <area shape="rect" coords="210,460,260,520" href="javascript:void(0);" @onclick="OnArea11Click"/>
-            <area shape="rect" coords="300,460,360,520" href="javascript:void(0);" @onclick="OnArea10Click"/> 
-            <area shape="rect" coords="390,450,450,510" href="javascript:void(0);" @onclick="OnArea9Click"/>
+            <area shape="rect" coords="130,450,190,510" href="javascript:void(0);" @onclick="OnArea12Click"/> @* 12C*@
+            <area shape="rect" coords="210,460,260,520" href="javascript:void(0);" @onclick="OnArea11Click"/> @* 11C*@
+            <area shape="rect" coords="300,460,360,520" href="javascript:void(0);" @onclick="OnArea10Click"/> @* 10C*@
+            <area shape="rect" coords="390,450,450,510" href="javascript:void(0);" @onclick="OnArea9Click"/>  @* 9C*@
 
         </map>
     </div>
@@ -154,7 +154,7 @@
     {
         if (temporaryReservation == null)
         {
-            return false;
+            return true;
         }
 
         var localStartDateTime = temporaryReservation.StartDate;
