@@ -40,15 +40,20 @@
                                                     4 rooms*@
         <img src="Floorplan.png" class="interactable-image" usemap="#image-map"/>
         <map name="image-map">
-            <area shape="rect" coords="80,340,140,410" href="javascript:void(0);" @onclick="OnArea1Click"/> @* 1A*@
-            <area shape="rect" coords="90,280,160,310" href="javascript:void(0);" @onclick="OnArea2Click"/> @* 2A*@
+            <area shape="rect" coords="80,340,130,410" href="javascript:void(0);" @onclick="OnArea1Click"/> @* 1A*@
+            <area shape="rect" coords="90,260,170,310" href="javascript:void(0);" @onclick="OnArea2Click"/> @* 2A*@
             <area shape="rect" coords="140,190,200,240" href="javascript:void(0);" @onclick="OnArea3Click"/> @* 3A*@
             <area shape="rect" coords="210,100,260,180" href="javascript:void(0);" @onclick="OnArea4Click"/> @* 4A*@
             
             <area shape="rect" coords="320,110,360,190" href="javascript:void(0);" @onclick="OnArea5Click"/> @* 5B*@
-            <area shape="rect" coords="380,190,440,260" href="javascript:void(0);" @onclick="OnArea6Click"/> @* 5B*@
+            <area shape="rect" coords="380,190,440,240" href="javascript:void(0);" @onclick="OnArea6Click"/> @* 6B*@
+            <area shape="rect" coords="440,270,500,320" href="javascript:void(0);" @onclick="OnArea7Click"/> @* 7B*@
+            <area shape="rect" coords="490,340,550,420" href="javascript:void(0);" @onclick="OnArea8Click"/> @* 8B*@
 
-
+            <area shape="rect" coords="130,450,190,510" href="javascript:void(0);" @onclick="OnArea12Click"/>
+            <area shape="rect" coords="210,460,260,520" href="javascript:void(0);" @onclick="OnArea11Click"/>
+            <area shape="rect" coords="300,460,360,520" href="javascript:void(0);" @onclick="OnArea10Click"/> 
+            <area shape="rect" coords="390,450,450,510" href="javascript:void(0);" @onclick="OnArea9Click"/>
 
         </map>
     </div>
@@ -180,10 +185,11 @@
                                             // it will use room id ebff2096-e80a-4274-99ec-16e55df5c4b5
     {       
         await HandleAreaClick(selectedFloor,   
-            new Guid("566b5f3b-1692-4b07-b9cd-4c297dd32c39"),
+            new Guid("ebff2096-e80a-4274-99ec-16e55df5c4b5"),
             new Guid("1115c04f-ae59-43aa-98bb-36190e1cbcfc"),
-            new Guid("ebff2096-e80a-4274-99ec-16e55df5c4b5"));
+            new Guid("46a234e2-d73c-445c-975a-3e3b00acfc41"));
     }
+
 
     public async Task OnArea2Click()
     {
@@ -208,7 +214,6 @@
             new Guid("fdf24957-4aa3-45fc-bbf1-dc72aba086b6"),
             new Guid("dfbc83cf-62c0-4f28-9fff-dbcc54af2b86"));
     }
-
     
     public async Task OnArea5Click()
     {
@@ -218,13 +223,61 @@
             new Guid("61f09731-964d-4dd2-8f2b-603197ff6411"));
     }
     
-    
     public async Task OnArea6Click()
     {
         await HandleAreaClick(selectedFloor, 
             new Guid("a4b92fb7-0d36-4895-87ca-069ee9c6b4da"),
             new Guid("729174e3-1b36-493d-b3c6-c05ccb07967b"),
             new Guid("c7478348-66e5-4fa5-819f-afd9f32a5675"));
+    }
+
+    public async Task OnArea7Click()
+    {
+        await HandleAreaClick(selectedFloor, 
+            new Guid("1449e8a3-a112-4467-8510-83578e451f54"),
+            new Guid("2ea59f31-7190-471f-8e5b-5b181601f859"),
+            new Guid("3dfed75c-ef36-42d6-8711-480dd072c4ea"));
+    }
+    
+    public async Task OnArea8Click()
+    {
+        await HandleAreaClick(selectedFloor, 
+            new Guid("65e7769a-4920-40af-b955-bd7b7154e305"),
+            new Guid("da629c62-6454-4814-b703-63e355f59592"),
+            new Guid("f66fd99f-5783-4274-9843-00b2d4eac3e3"));
+    }
+    
+    public async Task OnArea9Click()
+    {
+        await HandleAreaClick(selectedFloor, 
+            new Guid("c8211d00-9639-4775-9386-6738e20850f0"),
+            new Guid("1ab20995-4b47-4dfb-a02f-63bd96980098"),
+            new Guid("041ab6ce-dc94-47f5-a01b-8fda2bbeb678"));
+    }
+    
+    
+    public async Task OnArea10Click()
+    {
+        await HandleAreaClick(selectedFloor, 
+            new Guid("1ed50384-1033-4ed8-afcd-3ab7998ef2f2"),
+            new Guid("f39c7077-0ba6-4ba6-a54f-047f269eaa64"),
+            new Guid("033b37df-7e65-465a-ad3a-5b30ddca65dd"));
+    }
+    
+    public async Task OnArea11Click()
+    {
+        await HandleAreaClick(selectedFloor, 
+            new Guid("bb4e6e79-f3b7-45de-8f61-49a2fd8915b5"),
+            new Guid("75a59621-1180-4ba9-95fc-efbe58e437ab"),
+            new Guid("63d665bd-a13c-4c7f-8ba9-2b3a91c9dab8"));
+    }
+    
+    public async Task OnArea12Click()
+    {
+        await HandleAreaClick(selectedFloor, 
+            new Guid("91842939-d162-4a59-b1bb-d6af2d4d2683"),
+            new Guid("8d15ce43-b6fa-478c-b110-f43933d902d1"),
+            new Guid("11e40d8d-ca01-4c18-8361-b1ca8cca1566"));
     }
 
     private async Task HandleAreaClick(int floor, Guid roomId1, Guid roomId2, Guid roomId3) // method that creates a reservation
@@ -235,7 +288,7 @@
 
         Guid roomid = floor switch
         {
-            1 => roomId1,               // This is where the method chooses the right room
+            1 => roomId1,               // This switch is responsible for getting the right room bases on the saved floor
             2 => roomId2,
             3 => roomId3,
             _ => Guid.Empty

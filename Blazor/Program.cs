@@ -157,7 +157,7 @@ var connectionString = builder.Configuration.GetConnectionString("Database") ??
                        throw new InvalidOperationException("Connection string 'Database' not found.");
 builder.Services.AddDbContextFactory<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+//builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddIdentityCore<User>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddSignInManager()
@@ -182,7 +182,7 @@ builder.Services.AddTransient<WorkspaceService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+/*if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
 }
@@ -191,7 +191,7 @@ else
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
-}
+}*/
 
 app.UseHttpsRedirection();
 
